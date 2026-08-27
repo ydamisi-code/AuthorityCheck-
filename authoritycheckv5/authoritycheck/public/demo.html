@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AuthorityCheck — live demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet" />
+<style>
+:root{--ink:#171a1f;--ink-muted:#5c6169;--paper:#f4f5f3;--panel:#fff;--rule:#d9dbd5;--seal:#7a2e39;
+--verified:#1f6b4a;--notFound:#a3252f;--warn:#8a6a1f;--neutral:#5c6169;
+--display:'Newsreader',Georgia,serif;--sans:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:.9375rem;line-height:1.55;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.shell{max-width:62rem;margin:0 auto;padding:2rem 1.5rem 4.5rem}
+.masthead{border-bottom:1px solid var(--rule);padding-bottom:1.5rem;margin-bottom:3rem}
+h1{font-family:var(--display);font-size:2.125rem;font-weight:500;letter-spacing:-.015em;margin:0}
+h1 span{color:var(--seal)}
+.lede{font-family:var(--display);font-size:1.375rem;line-height:1.4;color:var(--ink-muted);max-width:34ch;margin:.75rem 0 0}
+.meta{font-family:var(--mono);font-size:.75rem;color:var(--ink-muted);margin-top:1rem}
+.panel{background:var(--panel);border:1px solid var(--rule);padding:1.5rem}
+.panel label{display:block;font-family:var(--mono);font-size:.75rem;color:var(--ink-muted);margin-bottom:.75rem}
+textarea{width:100%;min-height:13rem;resize:vertical;border:1px solid var(--rule);background:var(--paper);padding:1rem;font-family:var(--mono);font-size:.9375rem;line-height:1.7;color:var(--ink)}
+.foot{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;margin-top:1rem}
+.count{font-family:var(--mono);font-size:.75rem;color:var(--ink-muted)}
+.actions{display:flex;gap:.75rem}
+button{font-family:var(--sans);font-size:.9375rem;font-weight:500;padding:.75rem 1.5rem;border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer}
+button:hover:not(:disabled){background:var(--seal);border-color:var(--seal)}
+button:disabled{opacity:.35;cursor:not-allowed}
+button.quiet{background:transparent;color:var(--ink);border-color:var(--rule)}
+button.quiet:hover:not(:disabled){background:transparent;border-color:var(--ink);color:var(--ink)}
+.results{margin-top:3rem}
+.rhead{display:flex;flex-wrap:wrap;gap:1rem;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--rule);padding-bottom:.75rem}
+.rhead h2{font-family:var(--display);font-size:1.375rem;font-weight:500;margin:0}
+.tally{font-family:var(--mono);font-size:.75rem;color:var(--ink-muted)}
+ul.list{list-style:none;margin:0;padding:0}
+.entry{display:grid;grid-template-columns:9rem 1fr;gap:1.5rem;padding:1.5rem 0;border-bottom:1px solid var(--rule)}
+.rail{font-family:var(--mono);font-size:.8125rem;padding-top:.1rem}
+.kind{display:block;font-size:.6875rem;color:var(--ink-muted);margin-top:.5rem}
+.cite{font-family:var(--mono);font-size:1.0625rem;margin:0;word-break:break-word}
+.title{font-family:var(--display);font-size:1.0625rem;margin:.5rem 0 0}
+.note{color:var(--ink-muted);margin:.5rem 0 0;max-width:62ch}
+.open{display:inline-block;margin-top:.75rem;font-family:var(--mono);font-size:.8125rem;color:var(--seal)}
+.cands{list-style:none;margin:.75rem 0 0;padding:0;display:grid;gap:.5rem}
+.cands a{font-family:var(--mono);font-size:.8125rem;color:var(--ink)}
+.badge{font-family:var(--mono);font-weight:500;white-space:nowrap}
+.badge.verified{color:var(--verified)}.badge.notFound{color:var(--notFound)}
+.badge.malformed,.badge.ambiguous{color:var(--warn)}
+.badge.pending,.badge.error{color:var(--neutral)}
+.ph{border:1px dashed var(--rule);padding:2rem;margin-top:3rem}
+.ph p:first-child{font-family:var(--display);font-size:1.375rem;margin:0 0 .5rem}
+.ph p:last-child{color:var(--ink-muted);margin:0;max-width:58ch}
+.notice{border-left:2px solid var(--seal);padding-left:1rem;margin-top:3rem;color:var(--ink-muted);max-width:64ch}
+.notice strong{color:var(--ink);font-weight:600}
+.notice p{margin:0 0 .75rem}.notice p:last-child{margin-bottom:0}
+@media(max-width:40rem){.entry{grid-template-columns:1fr;gap:.75rem}.kind{display:inline;margin-left:.75rem}h1{font-size:1.375rem}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <header class="masthead">
+    <h1>Authority<span>Check</span></h1>
+    <p class="lede">Every case and statute in your draft, checked against the official source it claims to come from.</p>
+    <p class="meta">live demo &middot; real calls to legislation.gov.uk &middot; nothing you paste leaves your browser</p>
+  </header>
+
+  <section class="panel">
+    <label for="doc">your text</label>
+    <textarea id="doc" spellcheck="false"></textarea>
+    <div class="foot">
+      <p class="count" id="count" aria-live="polite">0 characters</p>
+      <div class="actions">
+        <button type="button" class="quiet" id="sample">Load sample</button>
+        <button type="button" id="check">Check citations</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="out"></div>
+
+  <aside class="notice">
+    <p><strong>Verified means the source exists. It does not mean you are right.</strong> A real judgment cited for a proposition it does not support is still a mistake, and no automated check can catch that. Read what you cite.</p>
+    <p>AuthorityCheck reports what official sources return. It is not legal advice. Legislation content is Crown copyright, reproduced under the Open Government Licence. Judgment data comes from Find Case Law under the Open Justice Licence.</p>
+  </aside>
+</main>
+
+<script type="module">
+/* Standalone build of src/lib. Kept in sync by hand; the React app is the
+   source of truth. This file exists to prove the API contract works. */
+
+const COURTS = 'UKSC|UKPC|UKHL|EWCA|EWHC|EWFC|EWCOP|UKUT|UKFTT';
+const NEUTRAL = new RegExp(String.raw`\[(1[89]\d{2}|20\d{2})\]\s+(${COURTS})\b(?:\s+(Civ|Crim))?(?:\s+(\d{1,5}))?(?:\s*\((\w{2,6})\))?`,'g');
+const CONNECTOR = 'of|and|the|for|in|to|on|at';
+const ACT_NAME = String.raw`(?:(?:[A-Z][A-Za-z'’\-]+|${CONNECTOR})\s+){1,8}?Act(?:\s+\(Northern Ireland\))?\s+(?:1[6-9]\d{2}|20\d{2})`;
+const SECTION_FIRST = new RegExp(String.raw`\bs(?:ection|s)?\.?\s*(\d{1,4}[A-Z]{0,2})\s+of\s+the\s+(${ACT_NAME})`,'g');
+const ACT_FIRST = new RegExp(String.raw`(${ACT_NAME})(?:\s*,?\s*(?:s(?:ection|s)?\.?)\s*(\d{1,4}[A-Z]{0,2}))?`,'g');
+const OPENERS = new Set(['see','also','compare','cf','following','applying','but','and','in','at','under','pursuant','citing','held','approved','distinguished','considered','the','a','an','per','further','contrary','accordingly','relies','relied']);
+
+const trimCap = p => { const w = p.split(/\s+/); while (w.length>1 && !/^[A-Z]/.test(w[0])) w.shift(); return w.join(' '); };
+const trimName = p => { const w = trimCap(p).split(/\s+/); while (w.length>1 && OPENERS.has(w[0].toLowerCase().replace(/[^a-z]/g,''))) w.shift(); return trimCap(w.join(' ')); };
+
+function caseName(text, i){
+  const win = text.slice(Math.max(0,i-140), i);
+  const m = win.match(/([A-Za-z'’.\-()]+(?:\s+[A-Za-z'’.\-()&]+){0,8}\s+v\s+[A-Z][A-Za-z'’.\-()]*(?:\s+[A-Za-z'’.\-()&]+){0,8})\s*$/);
+  if (!m) return undefined;
+  const t = trimName(m[1].trim());
+  return / v /.test(t) && /^[A-Z]/.test(t) ? t : undefined;
+}
+
+function extract(text){
+  const out=[], taken=[]; let n=0;
+  const hits=(s,e)=>taken.some(([a,b])=>s<b&&e>a);
+  for (const m of text.matchAll(NEUTRAL)){
+    const s=m.index, e=s+m[0].length; taken.push([s,e]);
+    const [,year,court,division,number,suffix]=m; const nm=caseName(text,s);
+    out.push({id:'c'+(++n),kind:'case',raw:(nm?nm+' ':'')+m[0].trim(),start:nm?s-nm.length-1:s,end:e,caseParts:{year,court,division,number,suffix}});
+  }
+  for (const m of text.matchAll(SECTION_FIRST)){
+    const s=m.index,e=s+m[0].length; if(hits(s,e))continue; taken.push([s,e]);
+    out.push({id:'c'+(++n),kind:'legislation',raw:m[0].trim(),start:s,end:e,statuteParts:{title:trimCap(m[2].trim()),section:m[1]}});
+  }
+  for (const m of text.matchAll(ACT_FIRST)){
+    const s=m.index,e=s+m[0].length; if(hits(s,e))continue; taken.push([s,e]);
+    out.push({id:'c'+(++n),kind:'legislation',raw:trimCap(m[0].trim()),start:s,end:e,statuteParts:{title:trimCap(m[1].trim()),section:m[2]}});
+  }
+  return out.sort((a,b)=>a.start-b.start);
+}
+
+function caseLawPath(p){
+  if(!p.number) return undefined;
+  const court=p.court.toLowerCase(); const seg=[court];
+  if(p.division) seg.push(p.division.toLowerCase());
+  else if(p.suffix && ['ewhc','ukut','ukftt'].includes(court)) seg.push(p.suffix.toLowerCase());
+  seg.push(p.year,p.number); return seg.join('/');
+}
+
+const LEG='https://www.legislation.gov.uk';
+const pathFromId = id => { const m=id.match(/\/id\/([a-z]+(?:-[a-z]+)?)\/(\d{4})\/(\d+)/); return m?`${m[1]}/${m[2]}/${m[3]}`:undefined; };
+
+async function resolveAct(title){
+  const r = await fetch(`${LEG}/all/data.feed?title=${encodeURIComponent(title)}&results-count=50`);
+  if(!r.ok) throw new Error('status '+r.status);
+  const doc = new DOMParser().parseFromString(await r.text(),'application/xml');
+  if(doc.querySelector('parsererror')) throw new Error('bad feed');
+  const want=title.toLowerCase().replace(/\s+/g,' ').trim(), seen=new Set(), out=[];
+  for(const en of doc.getElementsByTagName('entry')){
+    const t=(en.getElementsByTagName('title')[0]?.textContent||'').trim();
+    if(t.toLowerCase().replace(/\s+/g,' ')!==want) continue;
+    const p=pathFromId(en.getElementsByTagName('id')[0]?.textContent||'');
+    if(!p||seen.has(p)) continue; seen.add(p); out.push({title:t,path:p});
+  }
+  return out;
+}
+
+async function verifyStatute(c,p){
+  try{
+    const m = await resolveAct(p.title);
+    if(!m.length) return {citation:c,status:'notFound',sourceName:'legislation.gov.uk',note:'No Act with this exact short title was returned. Check the title and the year. Some older or local Acts are not held in revised form.'};
+    if(m.length>1) return {citation:c,status:'ambiguous',sourceName:'legislation.gov.uk',note:'More than one item of legislation carries this title. Pick the one you meant.',candidates:m.map(x=>({label:`${x.title} (${x.path})`,url:`${LEG}/${x.path}`}))};
+    const act=m[0];
+    if(!p.section) return {citation:c,status:'verified',resolvedTitle:act.title,sourceName:'legislation.gov.uk',sourceUrl:`${LEG}/${act.path}`,note:'The Act exists. No section was cited, so nothing narrower was checked.'};
+    const sec = await fetch(`${LEG}/${act.path}/section/${p.section}/data.xml`);
+    if(!sec.ok) return {citation:c,status:'notFound',resolvedTitle:act.title,sourceName:'legislation.gov.uk',sourceUrl:`${LEG}/${act.path}`,note:`The Act exists but no section ${p.section} was returned. It may be a typo, or the section may have been repealed and removed from the revised text.`};
+    return {citation:c,status:'verified',resolvedTitle:`${act.title}, section ${p.section}`,sourceName:'legislation.gov.uk',sourceUrl:`${LEG}/${act.path}/section/${p.section}`,note:'The section exists in the revised text. Whether that text is fully up to date is not checked in this version: legislation.gov.uk lists effects its editorial team has not yet applied.'};
+  }catch(err){
+    return {citation:c,status:'error',sourceName:'legislation.gov.uk',note:'legislation.gov.uk could not be reached, so this citation was not checked. Try again, or check it by hand.'};
+  }
+}
+
+const FCL='https://caselaw.nationalarchives.gov.uk';
+async function verifyCase(c,p){
+  const path=caseLawPath(p);
+  if(!path) return {citation:c,status:'malformed',note:'A neutral citation needs a judgment number after the court abbreviation, for example [2019] UKSC 41. Nothing was looked up.'};
+  const url=`${FCL}/${path}`;
+  try{
+    const r=await fetch(`${url}/data.xml`);
+    if(r.status===404) return {citation:c,status:'notFound',sourceName:'Find Case Law',sourceUrl:url,note:'No judgment with this neutral citation was returned. That may mean the citation is wrong, the judgment is not published on Find Case Law, or the case does not exist. Check it by hand before relying on it.'};
+    if(!r.ok) throw new Error('status '+r.status);
+    const doc=new DOMParser().parseFromString(await r.text(),'application/xml');
+    const nm=doc.querySelector('FRBRname')?.getAttribute('value')||doc.querySelector('docTitle')?.textContent?.trim();
+    return {citation:c,status:'verified',resolvedTitle:nm||undefined,sourceName:'Find Case Law',sourceUrl:url,note:'A judgment with this neutral citation exists. This tool has not checked that it supports the proposition you cited it for.'};
+  }catch(err){
+    return {citation:c,status:'error',sourceName:'Find Case Law',sourceUrl:url,note:'The citation is well formed, but Find Case Law could not be reached from your browser, so it was not checked. Open the link to confirm the judgment exists.'};
+  }
+}
+
+/* ---------- rendering ---------- */
+
+const LABELS={verified:'verified',notFound:'not found',malformed:'unreadable',ambiguous:'ambiguous',pending:'checking',error:'unavailable'};
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+const out=document.getElementById('out');
+
+function placeholder(t,b){out.innerHTML=`<div class="ph" role="status"><p>${esc(t)}</p><p>${esc(b)}</p></div>`;}
+
+function render(results){
+  const verified=results.filter(r=>r.status==='verified').length;
+  out.innerHTML=`<section class="results"><div class="rhead"><h2>Citations in your text</h2>
+  <p class="tally">${results.length} found &middot; ${verified} verified &middot; ${results.length-verified} need your attention</p></div>
+  <ul class="list">${results.map(r=>`<li class="entry">
+    <div class="rail"><span class="badge ${r.status}">[${LABELS[r.status]}]</span><span class="kind">${r.citation.kind==='case'?'case':'legislation'}</span></div>
+    <div>
+      <p class="cite">${esc(r.citation.raw)}</p>
+      ${r.resolvedTitle?`<p class="title">${esc(r.resolvedTitle)}</p>`:''}
+      ${r.note?`<p class="note">${esc(r.note)}</p>`:''}
+      ${r.candidates?`<ul class="cands">${r.candidates.map(c=>`<li><a href="${esc(c.url)}" target="_blank" rel="noreferrer">${esc(c.label)}</a></li>`).join('')}</ul>`:''}
+      ${r.sourceUrl?`<a class="open" href="${esc(r.sourceUrl)}" target="_blank" rel="noreferrer">Open on ${esc(r.sourceName)} &rarr;</a>`:''}
+    </div></li>`).join('')}</ul></section>`;
+}
+
+/* ---------- wiring ---------- */
+
+const doc=document.getElementById('doc'), count=document.getElementById('count'), checkBtn=document.getElementById('check');
+
+const SAMPLE = `In R (Ayinde) v London Borough of Haringey [2025] EWHC 1383 (Admin) the Divisional Court considered fabricated authorities. The duty engaged was the interim duty under section 188 of the Housing Act 1996.
+
+Reserved legal activities are defined by the Legal Services Act 2007, s 12. Directors' duties are set out in the Companies Act 2006 s 172, and see also s.6 of the Human Rights Act 1998.
+
+The claimant further relies on Cartwright v Secretary of State for Housing [2023] EWCA Civ 9999, on Housing Act 1996, s 1888, on the Companies Act generally, and on Re X [2019] UKSC.`;
+
+doc.addEventListener('input',()=>{count.textContent=doc.value.length.toLocaleString('en-GB')+' characters';});
+document.getElementById('sample').addEventListener('click',()=>{doc.value=SAMPLE;doc.dispatchEvent(new Event('input'));});
+
+checkBtn.addEventListener('click',async()=>{
+  const text=doc.value.trim();
+  if(!text) return;
+  checkBtn.disabled=true; checkBtn.textContent='Checking…';
+  const found=extract(text);
+  if(!found.length){ placeholder('No citations found','Nothing in this text matched a recognised case or legislation citation format.'); checkBtn.disabled=false; checkBtn.textContent='Check citations'; return; }
+  const results=found.map(c=>({citation:c,status:'pending'}));
+  render(results);
+  let cursor=0;
+  const worker=async()=>{ while(cursor<found.length){ const i=cursor++; const c=found[i];
+    results[i] = c.kind==='case' ? await verifyCase(c,c.caseParts) : await verifyStatute(c,c.statuteParts);
+    render(results); } };
+  await Promise.all([worker(),worker(),worker(),worker()]);
+  checkBtn.disabled=false; checkBtn.textContent='Check citations';
+});
+
+placeholder('Nothing checked yet','Choose Load sample, then Check citations. The sample deliberately mixes real authorities with broken ones.');
+</script>
+</body>
+</html>
